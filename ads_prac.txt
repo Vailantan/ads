@@ -1,0 +1,87 @@
+import pandas as pd
+import numpy as np
+from scipy import stats
+import seaborn as sns
+import matplotlib.pyplot as plt
+df = pd.read_csv('exp2.csv')
+df.head(50)
+
+summary_stats = df.describe()
+print(summary_stats)
+
+columns = list( df.columns)
+range_data = []
+vars = []
+stds = []
+mean = []
+median = []
+mode = []
+
+for column in columns:
+  if column != 'Highest_Qualified_Member':
+    range_data.append(df[column].max() - df[column].min())
+    vars.append(df[column].var())
+    stds.append(df[column].std())
+    mean.append(df[column].mean())
+    median.append(df[column].median())
+    mode.append(df[column].mode().iloc[0])
+
+spread_df = pd.DataFrame(list(zip(columns,mean,median,mode , range_data, vars, stds)), columns=["Column","Mean","Median","Mode", "Range", "Variance", "Standard Deviation"])
+spread_df
+
+def plot_center(attr = "Mthly_HH_Income"):
+  mean=df[attr].mean()
+  median=df[attr].median()
+ 
+
+  sns.displot(df[attr], color='k', kind="kde", legend=True)
+  plt.axvline(mean, color='r', linestyle='--')
+  plt.axvline(median, color='b', linestyle='-')
+
+
+
+columns = list(df.columns)
+for column in columns:
+  if column != 'Highest_Qualified_Member':
+    plot_center(column)
+
+
+t_statistic, p_value = stats.ttest_1samp(df['Mthly_HH_Expense'], 10)
+print("\nOne-sample t-test results:")
+print("T-statistic:", t_statistic)
+print("P-value:", p_value)
+
+
+t_statistic, p_value = stats.ttest_ind(df['Mthly_HH_Expense'], df['Mthly_HH_Income'])
+print("\nTwo-sample t-test results:")
+print("T-statistic:", t_statistic)
+print("P-value:", p_value)
+
+
+f_statistic, p_value = stats.f_oneway(df['No_of_Fly_Members'], df['Mthly_HH_Income'], df['Mthly_HH_Expense']) #ANOVA
+print(f_statistic)
+print(p_value)
+
+
+import matplotlib.pyplot as plt
+from scipy.stats import linregress
+
+# Assuming you have already performed linear regression and obtained the coefficients
+slope, intercept, r_value, p_value, std_err = linregress(df['No_of_Fly_Members'], df['Mthly_HH_Income'])
+
+# Plot the scatter plot of the data
+plt.scatter(df['No_of_Fly_Members'], df['Mthly_HH_Income'], label='Data')
+
+# Plot the regression line
+plt.plot(df['No_of_Fly_Members'], intercept + slope * df['No_of_Fly_Members'], color='red', label='Linear Regression')
+
+# Add labels and legend
+plt.xlabel('Independent Variable')
+plt.ylabel('Dependent Variable')
+plt.legend()
+
+# Show plot
+plt.show()
+
+
+
